@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dinner Week</title>
+</head>
+    <body>
+        <h1>Dinner Week</h1>
+        <form>
+            <label for="dinner">Add new dinner</label>
+            <input id="dinner" type="text" placeholder="Dinner">
+            <input id="add-dinner" type="submit" value="Add">
+        </form>
+        
+        <ul id="dinner-list">
+        </ul>    
+
+        <script>
+            (function(){
+                
+                let app = {
+                    dinners: localStorage.getItem('dinners'),
+                    ul: document.getElementById('dinner-list'),
+
+                    init () {
+                        // Create storage
+                        if (this.dinners === null) {
+                            // If storage not created
+                            this.dinners = {};
+                            localStorage.setItem('dinners', JSON.stringify(this.dinners));    
+                        } else {
+                            this.dinners = JSON.parse(localStorage.getItem('dinners'));
+                        }
+
+                        // Init list
+                        this.render();    
+                        
+
+                        this.listeners();
+                    },
+
+                    listeners () {
+                        // Click listener    
+                        document.getElementById('add-dinner').addEventListener('click', e => {
+                            e.preventDefault();
+                            
+                            let dinner = document.getElementById('dinner').value;
+                            document.getElementById('dinner').value = '';
+                            
+                            let dinners = JSON.parse(localStorage.getItem('dinners'));
+                            dinners[dinner] = dinner;    
+
+                            this.save(dinners);
+
+                            this.render();    
+                        });
+                    },
+
+                    render () {
+                        this.ul.innerHTML = '';    
+
+                        for (var key in this.dinners) {
+                            if (this.dinners.hasOwnProperty(key)) {
+                                let li = document.createElement('li');
+                                li.appendChild(document.createTextNode(key));
+                                this.ul.appendChild(li);            
+                            }
+                        }        
+                    },
+
+                    save (dinners) {
+                        localStorage.setItem('dinners', JSON.stringify(dinners));
+                        this.dinners = dinners;
+                    }        
+                    
+                }
+                
+                
+                app.init();              
+                
+
+                
+
+
+            })();    
+        </script>
+    </body>
+</html>
