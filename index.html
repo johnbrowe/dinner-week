@@ -18,10 +18,23 @@
         </ul>    
 
         <script>
+
             (function(){
                 
+                let storage = {
+                    get () {
+                        return JSON.parse(localStorage.getItem('dinners'));
+                    },
+
+                    set (dinners) {
+                        return localStorage.setItem('dinners', JSON.stringify(dinner));
+                    }
+                }
+                console.log(storage);
+
                 let app = {
                     dinners: localStorage.getItem('dinners'),
+
                     ul: document.getElementById('dinner-list'),
 
                     init () {
@@ -29,9 +42,10 @@
                         if (this.dinners === null) {
                             // If storage not created
                             this.dinners = {};
-                            localStorage.setItem('dinners', JSON.stringify(this.dinners));    
+
+                            storage.set(this.dinners);    
                         } else {
-                            this.dinners = JSON.parse(localStorage.getItem('dinners'));
+                            this.dinners = storage.get();
                         }
 
                         // Init list
@@ -47,14 +61,18 @@
                             e.preventDefault();
                             
                             let dinner = document.getElementById('dinner').value;
-                            document.getElementById('dinner').value = '';
+
+                            if (this.validate(dinner)) {
+                                document.getElementById('dinner').value = '';
                             
-                            let dinners = JSON.parse(localStorage.getItem('dinners'));
-                            dinners[dinner] = dinner;    
+                                let dinners = storage.get();
 
-                            this.save(dinners);
+                                dinners[dinner] = dinner;    
 
-                            this.render();    
+                                this.save(dinners);
+
+                                this.render();            
+                            }
                         });
                     },
 
@@ -64,22 +82,29 @@
                         for (var key in this.dinners) {
                             if (this.dinners.hasOwnProperty(key)) {
                                 let li = document.createElement('li');
+
                                 li.appendChild(document.createTextNode(key));
+
                                 this.ul.appendChild(li);            
                             }
                         }        
                     },
 
+                    // Functions    
                     save (dinners) {
-                        localStorage.setItem('dinners', JSON.stringify(dinners));
+                        storage.set(dinners);
+
                         this.dinners = dinners;
-                    }        
-                    
+                    },
+
+                    validate (dinner) {
+                        if (dinner.trim().length > 0) return true;
+                        return false;
+                    }     
                 }
             
-                
+                // Init app
                 app.init();              
-                
             })();    
         </script>
     </body>
