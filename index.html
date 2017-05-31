@@ -21,19 +21,18 @@
 
             (function(){
                 
-                let storage = {
+                let db = {
                     get () {
                         return JSON.parse(localStorage.getItem('dinners'));
                     },
 
                     set (dinners) {
-                        return localStorage.setItem('dinners', JSON.stringify(dinner));
+                        return localStorage.setItem('dinners', JSON.stringify(dinners));
                     }
                 }
-                console.log(storage);
 
                 let app = {
-                    dinners: localStorage.getItem('dinners'),
+                    dinners: db.get(),
 
                     ul: document.getElementById('dinner-list'),
 
@@ -43,9 +42,9 @@
                             // If storage not created
                             this.dinners = {};
 
-                            storage.set(this.dinners);    
+                            db.set(this.dinners);    
                         } else {
-                            this.dinners = storage.get();
+                            this.dinners = db.get();
                         }
 
                         // Init list
@@ -65,15 +64,20 @@
                             if (this.validate(dinner)) {
                                 document.getElementById('dinner').value = '';
                             
-                                let dinners = storage.get();
-
+                                let dinners = db.get();
                                 dinners[dinner] = dinner;    
 
                                 this.save(dinners);
 
                                 this.render();            
                             }
-                        });
+                        }, );
+                        /*
+                        document.getElementById('delete-dinner').addEventListener('click', e => {
+                            e.preventDefault();
+                            
+                            console.log( e );
+                        }, true);*/
                     },
 
                     render () {
@@ -82,8 +86,11 @@
                         for (var key in this.dinners) {
                             if (this.dinners.hasOwnProperty(key)) {
                                 let li = document.createElement('li');
-
+                                let a = document.createElement('a');
+                                let del = document.createTextNode(' [x]')
+                                a.appendChild(del);
                                 li.appendChild(document.createTextNode(key));
+                                li.appendChild(a);
 
                                 this.ul.appendChild(li);            
                             }
@@ -92,7 +99,7 @@
 
                     // Functions    
                     save (dinners) {
-                        storage.set(dinners);
+                        db.set(dinners);
 
                         this.dinners = dinners;
                     },
