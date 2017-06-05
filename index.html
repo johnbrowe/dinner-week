@@ -20,16 +20,19 @@
         <script>
 
             (function(){
-                
-                let db = {
-                    get () {
-                        return JSON.parse(localStorage.getItem('dinners'));
-                    },
+                function Database () {}
 
-                    set (dinners) {
-                        return localStorage.setItem('dinners', JSON.stringify(dinners));
-                    }
-                }
+                Database.prototype.get = function(){
+                    return JSON.parse(localStorage.getItem('dinners'));               
+                };    
+
+                Database.prototype.set = function(dinners){
+                    return localStorage.setItem('dinners', JSON.stringify(dinners));
+                };
+
+                let db = Object.create(Database.prototype);
+
+                
 
                 let app = {
                     dinners: db.get(),
@@ -72,12 +75,13 @@
                                 this.render();            
                             }
                         }, );
-                        /*
-                        document.getElementById('delete-dinner').addEventListener('click', e => {
-                            e.preventDefault();
-                            
-                            console.log( e );
-                        }, true);*/
+                        
+                        document.querySelectorAll('.delete').forEach( el => {
+                            el.addEventListener('click', e => {
+                                e.target.parentNode.remove();
+                            });
+                        });
+                        
                     },
 
                     render () {
@@ -89,6 +93,7 @@
                                 let a = document.createElement('a');
                                 let del = document.createTextNode(' [x]')
                                 a.appendChild(del);
+                                a.className = 'delete';
                                 li.appendChild(document.createTextNode(key));
                                 li.appendChild(a);
 
