@@ -1,123 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Dinner Week</title>
 </head>
-    <body>
-        <h1>Dinner Week</h1>
-        <form>
-            <label for="dinner">Add new dinner</label>
-            <input id="dinner" type="text" placeholder="Dinner">
-            <input id="add-dinner" type="submit" value="Add">
-        </form>
-        
-        <ul id="dinner-list">
-        </ul>    
 
-        <script>
+<body>
+    <h1>Dinner Week</h1>
+    <form>
+        <input id="dinner" type="text" placeholder="Add new Dinner">
+        <input id="add-dinner" type="submit" value="Add">
+    </form>
 
-            (function(){
-                function Database () {}
+    <ul id="dinner-list">
+    </ul>
 
-                Database.prototype.get = function(){
-                    return JSON.parse(localStorage.getItem('dinners'));               
-                };    
+    <script>
+        (function () {
+            "use strict";
 
-                Database.prototype.set = function(dinners){
-                    return localStorage.setItem('dinners', JSON.stringify(dinners));
-                };
-
-                let db = Object.create(Database.prototype);
-
-                
-
-                let app = {
-                    dinners: db.get(),
-
-                    ul: document.getElementById('dinner-list'),
-
-                    init () {
-                        // Create storage
-                        if (this.dinners === null) {
-                            // If storage not created
-                            this.dinners = {};
-
-                            db.set(this.dinners);    
-                        } else {
-                            this.dinners = db.get();
-                        }
-
-                        // Init list
-                        this.render();    
-                        
-                        // Init listeners
-                        this.listeners();
+            function Database() {
+                return {
+                    get: function () {
+                        return JSON.parse(localStorage.getItem('dinners'));
                     },
-
-                    listeners () {
-                        // Click listener    
-                        document.getElementById('add-dinner').addEventListener('click', e => {
-                            e.preventDefault();
-                            
-                            let dinner = document.getElementById('dinner').value;
-
-                            if (this.validate(dinner)) {
-                                document.getElementById('dinner').value = '';
-                            
-                                let dinners = db.get();
-                                dinners[dinner] = dinner;    
-
-                                this.save(dinners);
-
-                                this.render();            
-                            }
-                        }, );
-                        
-                        document.querySelectorAll('.delete').forEach( el => {
-                            el.addEventListener('click', e => {
-                                e.target.parentNode.remove();
-                            });
-                        });
-                        
-                    },
-
-                    render () {
-                        this.ul.innerHTML = '';    
-
-                        for (var key in this.dinners) {
-                            if (this.dinners.hasOwnProperty(key)) {
-                                let li = document.createElement('li');
-                                let a = document.createElement('a');
-                                let del = document.createTextNode(' [x]')
-                                a.appendChild(del);
-                                a.className = 'delete';
-                                li.appendChild(document.createTextNode(key));
-                                li.appendChild(a);
-
-                                this.ul.appendChild(li);            
-                            }
-                        }        
-                    },
-
-                    // Functions    
-                    save (dinners) {
-                        db.set(dinners);
-
-                        this.dinners = dinners;
-                    },
-
-                    validate (dinner) {
-                        if (dinner.trim().length > 0) return true;
-                        return false;
-                    }     
+                    set: function (dinners) {
+                        return localStorage.setItem('dinners', JSON.stringify(dinners));
+                    }
                 }
-            
-                // Init app
-                app.init();              
-            })();    
-        </script>
-    </body>
+            }
+
+            let db = Database();
+
+            let app = {
+                dinners: db.get(),
+
+                ul: document.getElementById('dinner-list'),
+
+                init() {
+                    // Create storage
+                    if (this.dinners === null) {
+                        // If storage not created
+                        this.dinners = {};
+
+                        db.set(this.dinners);
+                    } else {
+                        this.dinners = db.get();
+                    }
+
+                    // Init list
+                    this.render();
+
+                    // Init listeners
+                    this.listeners();
+                },
+
+                listeners() {
+
+                    // Click listener    
+                    document.getElementById('add-dinner').addEventListener('click', e => {
+                        e.preventDefault();
+
+                        let dinner = document.getElementById('dinner').value;
+
+                        if (this.validate(dinner)) {
+                            document.getElementById('dinner').value = '';
+
+                            let dinners = db.get();
+                            dinners[dinner] = dinner;
+
+                            this.save(dinners);
+
+                            this.render();
+                        }
+                    }, );
+
+                    document.querySelectorAll('.delete').forEach(el => {
+                        el.addEventListener('click', e => {
+                            e.target.parentNode.remove();
+                            let key = e.target.parentNode.id;
+                            let dinners = db.get();
+
+                            delete dinners[key];
+                            this.save(dinners);
+                            this.render();
+                        });
+                    });
+
+                },
+
+                render() {
+                    this.ul.innerHTML = '';
+
+                    for (var key in this.dinners) {
+                        if (this.dinners.hasOwnProperty(key)) {
+                            // Delete
+                            let a = document.createElement('a');
+                            let del = document.createTextNode(' [x]')
+                            a.appendChild(del);
+                            a.className = 'delete';
+
+                            // Item
+                            let li = document.createElement('li');
+                            li.id = key;
+                            li.appendChild(document.createTextNode(key));
+                            li.appendChild(a);
+
+                            // List
+                            this.ul.appendChild(li);
+                        }
+                    }
+                },
+
+                // Functions    
+                save(dinners) {
+                    db.set(dinners);
+
+                    this.dinners = dinners;
+                },
+
+                validate(dinner) {
+                    if (dinner.trim().length > 0) return true;
+                    return false;
+                }
+            }
+
+            // Init app
+            app.init();
+        })();
+    </script>
+</body>
+
 </html>
