@@ -89,30 +89,29 @@
                             this.render();
                         });
                     });
-
                 },
 
-                render() {
-                    this.ul.innerHTML = '';
-
+                render() {                
+                    let list;    
+                    
                     for (var key in this.dinners) {
                         if (this.dinners.hasOwnProperty(key)) {
-                            // Delete
-                            let a = document.createElement('a');
-                            let del = document.createTextNode(' [x]')
-                            a.appendChild(del);
-                            a.className = 'delete';
-
-                            // Item
-                            let li = document.createElement('li');
-                            li.id = key;
-                            li.appendChild(document.createTextNode(key));
-                            li.appendChild(a);
-
-                            // List
-                            this.ul.appendChild(li);
+                            list += this.listItem(key);        
                         }
                     }
+
+                    this.ul.innerHTML = list;
+                },
+
+                // Components
+                listItem(text) {    
+                    return `
+                    <li id="${text}">
+                        <a class="delete">
+                            ${text}        
+                        </a>
+                    </li>
+                    `
                 },
 
                 // Functions    
@@ -127,7 +126,7 @@
                     return false;
                 }
             }
-
+            
             // Init app
             app.init();
         })();
