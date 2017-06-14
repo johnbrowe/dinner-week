@@ -6,26 +6,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Dinner Week</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+        crossorigin="anonymous">
 </head>
+<style>
+    .delete {
+        cursor: pointer;
+    }
+</style>
 
 <body>
     <h1>Dinner Week</h1>
-    <form>
+    <form class="pure-form">
         <input id="dinner" type="text" placeholder="Add new Dinner">
-        <input id="add-dinner" type="submit" value="Add">
+        <input id="add-dinner" class="pure-button" type="submit" value="Add">
     </form>
 
     <ul id="dinner-list">
     </ul>
 
+    <form class="pure-form">
+        <input id="dinner-amount" type="number" placeholder="Number of dinners">
+        <input id="suggest-dinner" class="pure-button" type="submit" value="Suggest">
+    </form>
+
+    <ul id="suggested-dinner-list">
+    </ul>
+
+    <script src="https://www.gstatic.com/firebasejs/4.1.2/firebase.js"></script>
     <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBWxf1jRaF8Te5EyT06U5uv1P221mbCGGg",
+            authDomain: "dinner-week.firebaseapp.com",
+            databaseURL: "https://dinner-week.firebaseio.com",
+            projectId: "dinner-week",
+            storageBucket: "dinner-week.appspot.com",
+            messagingSenderId: "1076671328343"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <script>
+        let dbRefObject = firebase.database().ref().child('dinners');
+
         (function () {
             "use strict";
 
             function Database() {
                 return {
                     get: function () {
-                        return JSON.parse(localStorage.getItem('dinners'));
+                        let storage = localStorage.getItem('dinners');
+                        if (!isEmpty(storage)) {
+                            return JSON.parse(storage);
+                        }
                     },
                     set: function (dinners) {
                         return localStorage.setItem('dinners', JSON.stringify(dinners));
@@ -41,26 +74,21 @@
                 ul: document.getElementById('dinner-list'),
 
                 init() {
-                    // Create storage
-                    if (this.dinners === null) {
-                        // If storage not created
-                        this.dinners = {};
-
-                        db.set(this.dinners);
-                    } else {
-                        this.dinners = db.get();
-                    }
-
-                    // Init list
-                    this.render();
-
                     // Init listeners
                     this.listeners();
                 },
 
                 listeners() {
+                    let that = this;
 
-                    // Click listener    
+                    // DB change listener
+                    dbRefObject.on('value', (snap) => {
+                        that.dinners = snap.val();
+                        that.render();
+                    });
+
+                    /* Click listener */    
+                    // Add dinners
                     document.getElementById('add-dinner').addEventListener('click', e => {
                         e.preventDefault();
 
@@ -69,56 +97,65 @@
                         if (this.validate(dinner)) {
                             document.getElementById('dinner').value = '';
 
-                            let dinners = db.get();
-                            dinners[dinner] = dinner;
-
-                            this.save(dinners);
+                            this.save(dinner);
 
                             this.render();
                         }
-                    }, );
-
-                    document.querySelectorAll('.delete').forEach(el => {
-                        el.addEventListener('click', e => {
-                            e.target.parentNode.remove();
-                            let key = e.target.parentNode.id;
-                            let dinners = db.get();
-
-                            delete dinners[key];
-                            this.save(dinners);
-                            this.render();
-                        });
                     });
+
+                    // Delete dinner 
+                    document.querySelector('#dinner-list').addEventListener('click', function (e) {
+                        if (e.target.classList.contains('delete')) {
+                            let key = e.target.parentNode.id;
+                            that.delete(key);    
+                            that.render();
+
+                        }
+                    })
                 },
 
-                render() {                
-                    let list;    
-                    
-                    for (var key in this.dinners) {
-                        if (this.dinners.hasOwnProperty(key)) {
-                            list += this.listItem(key);        
-                        }
-                    }
+                render() {
+                    if (this.dinners) {
+                        let list = "";
 
-                    this.ul.innerHTML = list;
+                        for (var key in this.dinners) {
+                            if (this.dinners.hasOwnProperty(key)) {
+                                list += this.listItem(this.dinners[key], key);
+                            }
+                        }
+
+                        this.ul.innerHTML = list;
+                    } else {
+                        this.ul.innerHTML = "List is empty"
+                    }
                 },
 
                 // Components
-                listItem(text) {    
+                listItem(item, key) {
+                    console.log(item);
                     return `
-                    <li id="${text}">
+                    <li id="${key}">
+                        ${item.title}
                         <a class="delete">
-                            ${text}        
+                        [x]        
                         </a>
                     </li>
                     `
                 },
 
                 // Functions    
-                save(dinners) {
-                    db.set(dinners);
+                save(title) {
+                    let dinnerKey = dbRefObject.push().key;
+                    let dinner = {
+                        title: title
+                    };
+                    let updates = {};
+                    updates['/dinners/' + dinnerKey] = dinner;
+                    firebase.database().ref().update(updates);
+                },
 
-                    this.dinners = dinners;
+                delete(dinnerKey) {
+                    firebase.database().ref().child(`dinners/${dinnerKey}`).remove();
                 },
 
                 validate(dinner) {
@@ -126,10 +163,20 @@
                     return false;
                 }
             }
-            
+
             // Init app
             app.init();
         })();
+
+        // Check if object is empty
+        function isEmpty(obj) {
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key))
+                    return false;
+            }
+
+            return true;
+        }
     </script>
 </body>
 
