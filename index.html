@@ -10,6 +10,19 @@
         crossorigin="anonymous">
 </head>
 <style>
+    body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;    
+        width: 50%;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    h1 {
+        grid-column: 1/ span 2;
+        text-align: center;
+    }
+
     .delete {
         cursor: pointer;
     }
@@ -17,23 +30,26 @@
 
 <body>
     <h1>Dinner Week</h1>
-    <form class="pure-form">
-        <input id="dinner" type="text" placeholder="Add new Dinner">
-        <input id="add-dinner" class="pure-button" type="submit" value="Add">
-    </form>
+    
+    <section>
+        <form class="pure-form">
+            <input id="dinner" type="text" placeholder="Add new Dinner">
+            <input id="add-dinner" class="pure-button" type="submit" value="Add">
+        </form>
 
-    <ul id="dinner-list">
-    </ul>
+        <ul id="dinner-list">
+        </ul>
+    </section>
 
+    <section>
+        <form class="pure-form">
+            <input id="dinner-amount" type="number" placeholder="Number of dinners">
+            <input id="suggest-dinner" class="pure-button" type="submit" value="Suggest">
+        </form>
 
-    <form class="pure-form">
-        <input id="dinner-amount" type="number" placeholder="Number of dinners">
-        <input id="suggest-dinner" class="pure-button" type="submit" value="Suggest">
-    </form>
-
-    <ul id="suggested-dinner-list">
-    </ul>
-
+        <ul id="suggested-dinner-list">
+        </ul>
+    </section>
     <script src="https://www.gstatic.com/firebasejs/4.1.2/firebase.js"></script>
     <script>
         // Initialize Firebase
@@ -53,11 +69,11 @@
         (function () {
             "use strict";
             var newDataEvent = new Event('newData');
-            
+
             let store = {
                 // Data
                 dinners: null,
-                
+
                 init() {
                     // Init listeners
                     this.listeners();
@@ -87,8 +103,8 @@
                 listeners() {
                     let that = this;
 
-                    document.addEventListener('newData', (e) => { 
-                        that.dinners = store.dinners; 
+                    document.addEventListener('newData', (e) => {
+                        that.dinners = store.dinners;
                         that.render();
                     }, false);
 
@@ -188,15 +204,15 @@
                 },
 
                 render() {
-                    
+
                 },
 
-                suggest(){
+                suggest() {
                     let keyList = Object.keys(store.dinners);
                     let number = 7;
 
                     let suggestion = [];
-                    for(let i = 0; i < number; i++){
+                    for (let i = 0; i < number; i++) {
                         let number = this.getSuggestion(keyList.length, suggestion);
                         suggestion.push(number);
                     }
@@ -204,16 +220,16 @@
                     console.log(suggestion);
                 },
 
-                getSuggestion(length, suggestion){
+                getSuggestion(length, suggestion) {
                     let number = this.getRandomInt(0, length);
-                    
-                    if(!suggestion.includes(number)){
+
+                    if (!suggestion.includes(number)) {
                         return number;
                     } else {
-                        return this.getSuggestion(length, suggestion);        
+                        return this.getSuggestion(length, suggestion);
                     }
                 },
-                
+
                 getRandomInt(min, max) {
                     min = Math.ceil(min);
                     max = Math.floor(max);
