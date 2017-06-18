@@ -25,6 +25,7 @@
     <ul id="dinner-list">
     </ul>
 
+
     <form class="pure-form">
         <input id="dinner-amount" type="number" placeholder="Number of dinners">
         <input id="suggest-dinner" class="pure-button" type="submit" value="Suggest">
@@ -51,25 +52,30 @@
 
         (function () {
             "use strict";
+            var newDataEvent = new Event('newData');
+            
+            let store = {
+                // Data
+                dinners: null,
+                
+                init() {
+                    // Init listeners
+                    this.listeners();
+                },
 
-            function Database() {
-                return {
-                    get: function () {
-                        let storage = localStorage.getItem('dinners');
-                        if (!isEmpty(storage)) {
-                            return JSON.parse(storage);
-                        }
-                    },
-                    set: function (dinners) {
-                        return localStorage.setItem('dinners', JSON.stringify(dinners));
-                    }
+                listeners() {
+                    let that = this;
+
+                    // Firebase listener
+                    dbRefObject.on('value', (snap) => {
+                        that.dinners = snap.val();
+                        document.dispatchEvent(newDataEvent);
+                    });
                 }
             }
 
-            let db = Database();
-
-            let app = {
-                dinners: db.get(),
+            // DinnerList component
+            let dinnerList = {
 
                 ul: document.getElementById('dinner-list'),
 
@@ -81,13 +87,12 @@
                 listeners() {
                     let that = this;
 
-                    // DB change listener
-                    dbRefObject.on('value', (snap) => {
-                        that.dinners = snap.val();
+                    document.addEventListener('newData', (e) => { 
+                        that.dinners = store.dinners; 
                         that.render();
-                    });
+                    }, false);
 
-                    /* Click listener */    
+                    /* Click listener */
                     // Add dinners
                     document.getElementById('add-dinner').addEventListener('click', e => {
                         e.preventDefault();
@@ -101,17 +106,17 @@
 
                             this.render();
                         }
-                    });
+                    }, false);
 
                     // Delete dinner 
                     document.querySelector('#dinner-list').addEventListener('click', function (e) {
                         if (e.target.classList.contains('delete')) {
                             let key = e.target.parentNode.id;
-                            that.delete(key);    
+                            that.delete(key);
                             that.render();
 
                         }
-                    })
+                    }, false);
                 },
 
                 render() {
@@ -132,7 +137,6 @@
 
                 // Components
                 listItem(item, key) {
-                    console.log(item);
                     return `
                     <li id="${key}">
                         ${item.title}
@@ -164,8 +168,63 @@
                 }
             }
 
-            // Init app
-            app.init();
+            // Suggestions component
+            let suggestions = {
+                ul: document.getElementById('suggested-dinner-list'),
+
+                init() {
+                    // Init listeners
+                    this.listeners();
+                },
+
+                listeners() {
+                    let that = this;
+
+                    // Suggest dinner 
+                    document.getElementById('suggest-dinner').addEventListener('click', function (e) {
+                        e.preventDefault();
+                        that.suggest();
+                    }, false);
+                },
+
+                render() {
+                    
+                },
+
+                suggest(){
+                    let keyList = Object.keys(store.dinners);
+                    let number = 7;
+
+                    let suggestion = [];
+                    for(let i = 0; i < number; i++){
+                        let number = this.getSuggestion(keyList.length, suggestion);
+                        suggestion.push(number);
+                    }
+
+                    console.log(suggestion);
+                },
+
+                getSuggestion(length, suggestion){
+                    let number = this.getRandomInt(0, length);
+                    
+                    if(!suggestion.includes(number)){
+                        return number;
+                    } else {
+                        return this.getSuggestion(length, suggestion);        
+                    }
+                },
+                
+                getRandomInt(min, max) {
+                    min = Math.ceil(min);
+                    max = Math.floor(max);
+                    return Math.floor(Math.random() * (max - min)) + min;
+                }
+            }
+
+            // Init components
+            dinnerList.init();
+            suggestions.init();
+            store.init();
         })();
 
         // Check if object is empty
