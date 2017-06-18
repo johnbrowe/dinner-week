@@ -187,10 +187,12 @@
             // Suggestions component
             let suggestions = {
                 ul: document.getElementById('suggested-dinner-list'),
+                suggestions: [],
 
                 init() {
                     // Init listeners
                     this.listeners();
+                    this.render();
                 },
 
                 listeners() {
@@ -200,13 +202,39 @@
                     document.getElementById('suggest-dinner').addEventListener('click', function (e) {
                         e.preventDefault();
                         that.suggest();
+                        that.render();
                     }, false);
                 },
 
                 render() {
+                    if (this.suggestions.length > 0) {
+                        let list = "";
 
+                        this.suggestions.forEach(function(element, key) {
+                            list += this.listItem(store.dinners[element], key);        
+                        }, this);
+
+                        this.ul.innerHTML = list;
+                    } else {
+                        this.ul.innerHTML = "List is empty"
+                    }
                 },
 
+                // Components
+                listItem(item, key) {
+                    return `
+                    <li id="${key}">
+                        ${item.title}
+                        <a class="delete">
+                        [x]        
+                        </a>
+                    </li>
+                    `
+                },
+
+
+
+                // Funtions
                 suggest() {
                     let keyList = Object.keys(store.dinners);
                     let number = 7;
@@ -217,7 +245,9 @@
                         suggestion.push(number);
                     }
 
-                    console.log(suggestion);
+                    this.suggestions = suggestion.map(function(element){
+                        return keyList[element];
+                    });
                 },
 
                 getSuggestion(length, suggestion) {
