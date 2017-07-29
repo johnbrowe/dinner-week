@@ -1,4 +1,4 @@
 # Todo 
-* Create edit functionality
-* Support specified number
-* Support multiple users
+- [] Support edit dinner name
+- [x] Support specified number of dinners
+- [] Support multiple users
