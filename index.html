@@ -201,7 +201,10 @@
                     // Suggest dinner 
                     document.getElementById('suggest-dinner').addEventListener('click', function (e) {
                         e.preventDefault();
-                        that.suggest();
+                        
+                        let amount = document.getElementById('dinner-amount').value;
+                        
+                        that.suggest(amount);
                         that.render();
                     }, false);
                 },
@@ -232,13 +235,10 @@
                     `
                 },
 
-
-
                 // Funtions
-                suggest() {
+                suggest(number) {
                     let keyList = Object.keys(store.dinners);
-                    let number = 7;
-
+  
                     let suggestion = [];
                     for (let i = 0; i < number; i++) {
                         let number = this.getSuggestion(keyList.length, suggestion);
